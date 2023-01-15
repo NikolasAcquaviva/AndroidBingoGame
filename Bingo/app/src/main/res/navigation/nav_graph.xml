@@ -1,0 +1,100 @@
+<?xml version="1.0" encoding="utf-8"?>
+<navigation xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/nav_graph"
+    app:startDestination="@id/MenuFragment">
+
+    <fragment
+        android:id="@+id/MenuFragment"
+        android:name="com.example.bingo.MenuFragment"
+        tools:layout="@layout/fragment_menu">
+
+        <action
+            android:id="@+id/action_Menu_to_NewGame"
+            app:destination="@id/NewGameFragment" />
+
+        <action
+            android:id="@+id/action_Menu_to_Statistics"
+            app:destination="@id/StatisticsFragment" />
+
+        <action
+            android:id="@+id/action_Menu_to_Login"
+            app:destination="@id/LoginFragment" />
+    </fragment>
+
+    <fragment
+        android:id="@+id/NewGameFragment"
+        android:name="com.example.bingo.NewGameFragment"
+        tools:layout="@layout/fragment_new_game">
+
+        <action
+            android:id="@+id/action_Rules_to_CardSelection"
+            app:destination="@id/CardFragment" />
+    </fragment>
+
+    <fragment
+        android:id="@+id/CardFragment"
+        android:name="com.example.bingo.CardFragment"
+        tools:layout="@layout/fragment_card">
+
+        <action
+            android:id="@+id/action_Card_to_WaitingRoom"
+            app:destination="@id/WaitingRoomFragment" />
+    </fragment>
+
+    <fragment
+        android:id="@+id/WaitingRoomFragment"
+        android:name="com.example.bingo.WaitingRoomFragment"
+        tools:layout="@layout/fragment_waiting_room">
+
+        <action
+            android:id="@+id/action_WaitingRoom_to_Menu"
+            app:destination="@id/MenuFragment" />
+
+        <action
+            android:id="@+id/action_WaitingRoom_to_BingoMatch"
+            app:destination="@id/BingoMatchFragment" />
+    </fragment>
+
+    <fragment
+        android:id="@+id/BingoMatchFragment"
+        android:name="com.example.bingo.BingoMatchFragment"
+        tools:layout="@layout/fragment_bingo_match">
+
+        <action
+            android:id="@+id/action_BingoMatch_to_Menu"
+            app:destination="@id/MenuFragment" />
+
+        <action
+            android:id="@+id/action_BingoMatch_to_MatchEnd"
+            app:destination="@id/MatchEndFragment" />
+
+    </fragment>
+
+    <fragment
+        android:id="@+id/MatchEndFragment"
+        android:name="com.example.bingo.MatchEndFragment"
+        tools:layout="@layout/fragment_match_end">
+        <action
+            android:id="@+id/action_MatchEnd_to_Menu"
+            app:destination="@id/MenuFragment" />
+    </fragment>
+
+    <fragment
+        android:id="@+id/StatisticsFragment"
+        android:name="com.example.bingo.StatisticsFragment"
+        tools:layout="@layout/fragment_statistics">
+    </fragment>
+
+    <fragment
+        android:id="@+id/LoginFragment"
+        android:name="com.example.bingo.ui.login.LoginFragment"
+        tools:layout="@layout/fragment_login">
+
+        <action
+            android:id="@+id/action_Login_to_Menu"
+            app:destination="@id/MenuFragment" />
+    </fragment>
+
+</navigation>

@@ -1,0 +1,48 @@
+<resources>
+    <string name="app_name">Bingo</string>
+    <string name="action_settings">Settings</string>
+    <string name="bingo_label">Bingo Game</string>
+    <string name="hello_blank_fragment">Hello blank fragment</string>
+    <!-- Strings related to login -->
+    <string name="prompt_email">Email</string>
+    <string name="prompt_username">Username</string>
+    <string name="prompt_password">Password</string>
+    <string name="action_sign_in">Sign in</string>
+    <string name="action_sign_up">Register</string>
+    <string name="welcome">"Welcome! "</string>
+    <string name="invalid_username">Not a valid username</string>
+    <string name="invalid_password">Password must be >5 characters</string>
+    <string name="login_failed">"Login failed"</string>
+    <string name="signup_failed">"Registration failed"</string>
+
+    <!-- Strings related to game rules -->
+    <string name="rules">Rules of a Bingo Game</string>
+    <string name="gameDescription_title">Description of a Bingo Match</string>
+    <string name="general_description">\nThe Bingo Game is a turn-based game in which there are two main entities: the players and the game host(caller).\n\nEvery player has a number n of cards, each of which contains 15 numbers which are spread over 3 rows and 9 columns.\n\nEvery turn starts with the caller stating a number from 1 to 90, and ends with each player ticking off the given number and eventually announcing and notifying the caller that a new score was reached.\n\nEvery type of score has to be reached sequentially, meaning that the second score cannot be touched unless a player achieved the first before.\n\nThe match ends once a player obtained the last score available, Bingo!</string>
+    <string name="scores_title">\nScores to be obtained in a Match</string>
+    <string name="scores_description">\nThere are 5 types of scores:\n
+    - Ambo, two numbers ticked off in a row\n
+    - Terno, three numbers ticked off in a row\n
+    - Quaterno, four numbers ticked off in a row\n
+    - Cinquina, five numbers ticked off in a row\n
+    - Bingo, the entire card was ticked off\n\nJustifiably, the achievement of a score is impossible if no one achieved the previous score.\n\nNote that if a player achieves a score, e.g ambo, another player has no more to announce that ambo was achieved but only that the next score, (i.e terno), was obtained.
+    </string>
+    <string name="numCards_title">\nThe number of cards</string>
+    <string name="number_of_cards">\nIn the case of this game, one player can choose the number of cards to play with.\nNotice that a greater number of cards does not necessarily mean a greater win probability.\n\nGood luck and enjoy the game!</string>
+    <!-- Card Description in Fragment -->
+    <string name="card_description">This is what a bingo card looks like!\nIt is made of 3 rows and 9 columns. Besides that, a bingo card is characterized by two features:\n
+    1. Every row must contain 5 numbers\n
+    2. Every column must contain at least 1 number</string>
+    <string-array name="numCards_choice">
+        <item>1 card</item>
+        <item>2 cards</item>
+        <item>3 cards</item>
+    </string-array>
+
+    <!-- Strings related to the waiting room -->
+    <string name="waiting_room">Welcome To The Bingo Waiting Room</string>
+    <string name="time_toStart">Seconds left for the Match to be started: </string>
+    <string name="before_expire">The match will start automatically if the waiting room gets filled before timer expires!</string>
+    <string name="exit_match">Exit the Match</string>
+    <string name="exit_dialogMsg">Are you sure you want to quit the game?</string>
+</resources>

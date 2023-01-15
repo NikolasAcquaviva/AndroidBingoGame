@@ -1,0 +1,73 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@color/app_background"
+    tools:context=".MainActivity">
+
+    <com.google.android.material.appbar.AppBarLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        app:layout_constraintTop_toTopOf="parent"
+        android:theme="@style/Theme.BingoServer.AppBarOverlay">
+
+        <androidx.appcompat.widget.Toolbar
+            android:id="@+id/toolbar"
+            android:layout_width="match_parent"
+            android:layout_height="?attr/actionBarSize"
+            android:background="@color/red_bar"
+            app:popupTheme="@style/Theme.BingoServer.PopupOverlay" />
+
+    </com.google.android.material.appbar.AppBarLayout>
+
+
+    <com.google.android.material.button.MaterialButton
+        android:id="@+id/open_connection"
+        android:layout_width="260dp"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="140dp"
+        android:text="Turn On the Server"
+        app:layout_constraintBottom_toTopOf="@id/close_connection"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        app:strokeColor="@color/red_bar"
+        app:strokeWidth="1dp"
+        app:cornerRadius="10dp"
+        app:backgroundTint="@color/btn_background"
+        android:textColor="@color/btn_text"
+        />
+
+    <com.google.android.material.button.MaterialButton
+        android:id="@+id/close_connection"
+        android:layout_width="260dp"
+        android:layout_marginTop="80dp"
+        android:layout_height="wrap_content"
+        android:text="Turn Down the Server"
+        app:layout_constraintTop_toBottomOf="@id/open_connection"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:strokeColor="@color/red_bar"
+        app:strokeWidth="1dp"
+        app:cornerRadius="10dp"
+        app:backgroundTint="@color/btn_background"
+        android:textColor="@color/btn_text"
+        />
+
+    <ScrollView
+        android:layout_height="match_parent"
+        android:layout_width="match_parent"
+        android:layout_marginTop="370dp"
+        android:orientation="vertical">
+        <androidx.constraintlayout.widget.ConstraintLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:id="@+id/logs_view"
+            app:layout_constraintTop_toBottomOf="@id/close_connection"
+            android:layout_marginTop="40dp">
+
+        </androidx.constraintlayout.widget.ConstraintLayout>
+    </ScrollView>
+</androidx.constraintlayout.widget.ConstraintLayout>
