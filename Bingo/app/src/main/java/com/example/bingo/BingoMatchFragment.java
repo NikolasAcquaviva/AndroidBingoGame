@@ -30,6 +30,7 @@ public class BingoMatchFragment extends Fragment {
     private static WebSocketClient socketInstance;
     private static boolean won;
     private int numCards;
+    private static boolean consecutiveScores = false;
     private Integer[][] board = new Integer[9][10];
     private ArrayList<Integer[][]> myCards = new ArrayList<>();
     private static ArrayList<TableLayout> myTables;
@@ -73,6 +74,7 @@ public class BingoMatchFragment extends Fragment {
             if(count == nextGoal) {
                 socketInstance.send("score=" + scores[index - 1] + ";matchId=" + matchId);
                 won = true;
+                consecutiveScores = true;
             }
 
         }
@@ -83,6 +85,7 @@ public class BingoMatchFragment extends Fragment {
                     if (checked[i][j]) count++;
                 }
                 if (count == nextGoal) {
+                    consecutiveScores = true;
                     socketInstance.send("score=" + scores[index - 1] + ";matchId="+matchId);
                 }
             }
@@ -112,6 +115,7 @@ public class BingoMatchFragment extends Fragment {
         for(int i = 0; i < myTables.size(); i++){
             checkNumberOnTable(myTables.get(i), n);
         }
+        consecutiveScores = false;
     }
 
     public static void checkNumberOnTable(TableLayout table, int n){
@@ -126,7 +130,7 @@ public class BingoMatchFragment extends Fragment {
                         Boolean[][] oldChecked = checkedCells.get(table);
                         oldChecked[i][j] = true;
                         checkedCells.replace(table, oldChecked);
-                        checkGoal(table);
+                        if(!consecutiveScores) checkGoal(table);
                     }
                 }
             }

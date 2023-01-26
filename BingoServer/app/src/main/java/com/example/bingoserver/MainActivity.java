@@ -99,24 +99,32 @@ public class MainActivity extends AppCompatActivity {
         });
     }
 
+    private static void clearView(){
+        ConstraintLayout cl = binding.logsView;
+        for(int i = 0; i < cl.getChildCount(); i++){
+            TextView tv = (TextView) cl.getChildAt(i); tv.setText("");
+        }
+    }
+
     private static void addOnView(){
         ConstraintLayout cl = binding.logsView;
         Handler h = new Handler(Looper.getMainLooper());
-        for(int i = 0; i < logs.size(); i++){
-            TextView tv = new TextView(binding.getRoot().getContext());
-            tv.setTextSize(16);
-            tv.setTextAlignment(View.TEXT_ALIGNMENT_CENTER);
-            tv.setPadding(40,180*(i+1),40,0);
-            tv.setText(logs.get(i));
-            Runnable r = new Runnable() {
-                @Override
-                public void run() {
-                    cl.addView(tv);
 
-                }
-            };
-            h.post(r);
-        }
+        final TextView tv = new TextView(binding.getRoot().getContext());
+        tv.setTextSize(16);
+        tv.setTextAlignment(View.TEXT_ALIGNMENT_CENTER);
+        tv.setPadding(40,180*(logs.size()+1),40,0);
+        tv.setText(logs.get(logs.size()-1));
+        Runnable r = new Runnable() {
+            @Override
+            public void run() {
+                cl.addView(tv);
+
+            }
+        };
+        h.post(r);
+        h = null;
+        r = null;
     }
 
     @Override
@@ -130,7 +138,7 @@ public class MainActivity extends AppCompatActivity {
     }
 
     public static class WSocServer extends WebSocketServer {
-        private List<String> matchUsers;
+        private List<String> matchUsers = new ArrayList<>();
         private Integer timerSeconds;
         private UUID matchId;
 
@@ -146,7 +154,9 @@ public class MainActivity extends AppCompatActivity {
             TimerTask task = new TimerTask() {
                 public void run() {
                     if(timerSeconds > 0) timerSeconds--;
-                    else timerSeconds = 60;
+                    else {
+                        timerSeconds = 60;
+                    }
                 }
             };
             timer.schedule(task,0L,1000L);
@@ -180,7 +190,9 @@ public class MainActivity extends AppCompatActivity {
         private Integer getExtractedNumber(String match, Integer turn){
             if(turn >= 90) return -1;
             Integer[] thisMatchExtractedNumbers = matchExtractedNumbers.get(match);
-            return thisMatchExtractedNumbers[turn];
+            Integer returning = thisMatchExtractedNumbers[turn];
+            thisMatchExtractedNumbers = null;
+            return returning;
         }
 
         
@@ -195,131 +207,165 @@ public class MainActivity extends AppCompatActivity {
 
         @Override
         public void onOpen(WebSocket conn, ClientHandshake handshake) {
-            Log.i("WebSocket(open)", conn.getRemoteSocketAddress().getAddress().getHostAddress() + " entered the room!");
-            logs.add(conn.getRemoteSocketAddress().getAddress().getHostAddress() + " entered the room!");
-            matchUsers = new ArrayList<>();
-            matchUsers.addAll(Arrays.asList("user1","user2","user3","user4","user5"));
+            Thread thread = new Thread(new Runnable() {
+                @Override
+                public void run() {
+                    Log.i("WebSocket(open)", conn.getRemoteSocketAddress().getAddress().getHostAddress() + " entered the room!");
+                    logs.add(conn.getRemoteSocketAddress().getAddress().getHostAddress() + " entered the room!");
+                    MainActivity.addOnView();
+                    matchUsers.addAll(Arrays.asList("user1","user2","user3","user4","user5"));
+                }
+            });
+            thread.start();
         }
 
         @Override
         public void onClose(WebSocket conn, int code, String reason, boolean remote) {
-            Log.i("WebSocket(close)", conn + " has left the room! Reason: " + reason);
-            logs.add(conn + " has left the room!");
+            Thread thread = new Thread(new Runnable() {
+                @Override
+                public void run() {
+                    Log.i("WebSocket(close)", conn + " has left the room! Reason: " + reason);
+                    logs.add(conn + " has left the room!");
+                    MainActivity.addOnView();
+                }
+            });
+            thread.start();
         }
 
         @Override
         public void onMessage(WebSocket conn, String message) {
-            logs.add(message + " from " + conn.getRemoteSocketAddress().getAddress().getHostAddress());
-            Log.i("WebSocket(message)", conn + ": " + message);
+            Thread thread = new Thread(new Runnable() {
+                @Override
+                public void run() {
+                    if(!message.startsWith("inGame"))
+                        logs.add(message + " from " + conn.getRemoteSocketAddress().getAddress().getHostAddress());
+                    Log.i("WebSocket(message)", conn + ": " + message);
+                    MainActivity.addOnView();
 
-            MainActivity.addOnView();
-            
-            if(message.startsWith("username")){
-                if(matchUsers.size() < 6){
-                    String user = message.replace("username;","");
-                    if(!matchUsers.contains(user)) {
-                        matchUsers.add(user);
-                        clientConnection.put(user,conn);
+                    if(message.startsWith("username")){
+                        if(matchUsers.size() < 6){
+                            String user = message.replace("username;","");
+                            if(!matchUsers.contains(user)) {
+                                matchUsers.add(user);
+                                clientConnection.put(user,conn);
+                            }
+                            String sending = "matchUsers;" + UsersListToString(matchUsers);
+                            conn.send(sending);
+                        }
+                        else conn.send("errorUsername");
                     }
-                    String sending = "matchUsers;" + UsersListToString(matchUsers);
-                    conn.send(sending);
-                }
-                else conn.send("errorUsername");
-            }
-            else if(message.equals("timerStart")){
-                initTimer();
-                if(matchUsers.size() < 6){
-                    String sending = "timeStarter;" + timerSeconds.toString();
-                    conn.send(sending);
-                }
-                else conn.send("errorTimer");
-            }
-            else if(message.equals("getMatchId")){
-                if(!matchUsers.isEmpty()){
-                    initMatch();
-                    matchUsers.clear();
-                }
-                String sending = "matchId;" + matchId.toString();
-                conn.send(sending);
-            }
-            else if(message.startsWith("inGame")){
-                String[] fields = message.split(";");
-                String matchId = fields[1].split("=")[1];
-                int turn = Integer.parseInt(fields[2].split("=")[1]);
-                Integer extraction = getExtractedNumber(matchId,turn);
-                conn.send("extracted=" + extraction.toString());
-            }
-            else if(message.startsWith("score")){
-                String matchId = message.split(";")[1].split("=")[1];
-                String score = message.split(";")[0].split("=")[1];
-                WebSocket[] clients = matchClients.get(matchId).toArray(new WebSocket[0]);
-                String user = "";
-                Enumeration<String> keys = clientConnection.keys();
-                String key = keys.nextElement();
-                while(!key.isEmpty()){
-                    if(clientConnection.get(key) == conn) {
-                        user = key;
-                        break;
+                    else if(message.equals("timerStart")){
+                        initTimer();
+                        if(matchUsers.size() < 6){
+                            String sending = "timeStarter;" + timerSeconds.toString();
+                            conn.send(sending);
+                        }
+                        else conn.send("errorTimer");
                     }
-                    key = keys.nextElement();
-                }
-
-                Hashtable<String,ArrayList<String>> tmp = users_scorePerMatch.get(matchId);
-                ArrayList<String> tmp_list = tmp.get(user);
-                tmp_list.add(score);
-                tmp.replace(user,tmp_list);
-                users_scorePerMatch.replace(matchId,tmp);
-
-                for(int i = 0; i < clients.length; i++){
-                    clients[i].send("statement;" + user + " got " + score + " with");
-                }
-            }
-            else if(message.startsWith("endMatchData")){
-                String matchId = message.split(";")[1].split("=")[1];
-                Hashtable<String,ArrayList<String>> users_ofMatch = users_scorePerMatch.get(matchId);
-                ArrayList<String> users = new ArrayList<>();
-                Enumeration<String> e = users_ofMatch.keys();
-
-                while(e.hasMoreElements()){
-                    users.add(e.nextElement());
-                }
-                String sending = "matchEndData;";
-                for(String user: users) sending += user + "=" + UsersListToString(users_ofMatch.get(user)) + ":";
-                conn.send(sending);
-            }
-            else if(message.startsWith("totalEnd")){
-                String matchId = message.split(";")[1].split("=")[1];
-                if(matchClients.get(matchId)!=null) {
-                    WebSocket[] clients = matchClients.get(matchId).toArray(new WebSocket[0]);
-                    for (WebSocket client : clients) client.close();
-                    Enumeration<String> e = clientConnection.keys();
-                    while (e.hasMoreElements()) {
-                        for (WebSocket client : clients) {
-                            String tmp = e.nextElement();
-                            if (clientConnection.get(tmp) == client) {
-                                clientConnection.remove(tmp);
+                    else if(message.equals("getMatchId")){
+                        if(!matchUsers.isEmpty()){
+                            initMatch();
+                            matchUsers.clear();
+                        }
+                        String sending = "matchId;" + matchId.toString();
+                        conn.send(sending);
+                    }
+                    else if(message.startsWith("inGame")){
+                        String[] fields = message.split(";");
+                        String matchId = fields[1].split("=")[1];
+                        int turn = Integer.parseInt(fields[2].split("=")[1]);
+                        Integer extraction = getExtractedNumber(matchId,turn);
+                        fields = null;
+                        conn.send("extracted=" + extraction.toString());
+                    }
+                    else if(message.startsWith("score")){
+                        String matchId = message.split(";")[1].split("=")[1];
+                        String score = message.split(";")[0].split("=")[1];
+                        WebSocket[] clients = matchClients.get(matchId).toArray(new WebSocket[0]);
+                        String user = "";
+                        Enumeration<String> keys = clientConnection.keys();
+                        String key = keys.nextElement();
+                        while(!key.isEmpty()){
+                            if(clientConnection.get(key) == conn) {
+                                user = key;
                                 break;
                             }
+                            key = keys.nextElement();
+                        }
+
+                        keys = null;
+                        Hashtable<String,ArrayList<String>> tmp = users_scorePerMatch.get(matchId);
+                        ArrayList<String> tmp_list = tmp.get(user);
+                        tmp_list.add(score);
+                        tmp.replace(user,tmp_list);
+                        users_scorePerMatch.replace(matchId,tmp);
+
+                        for(int i = 0; i < clients.length; i++){
+                            clients[i].send("statement;" + user + " got " + score + " with");
+                        }
+                        clients = null;
+                    }
+                    else if(message.startsWith("endMatchData")){
+                        String matchId = message.split(";")[1].split("=")[1];
+                        Hashtable<String,ArrayList<String>> users_ofMatch = users_scorePerMatch.get(matchId);
+                        ArrayList<String> users = new ArrayList<>();
+                        Enumeration<String> e = users_ofMatch.keys();
+
+                        while(e.hasMoreElements()){
+                            Log.e("endmatchdata","a");
+                            users.add(e.nextElement());
+                        }
+                        e = null;
+                        String sending = "matchEndData;";
+                        for(String user: users) sending += user + "=" + UsersListToString(users_ofMatch.get(user)) + ":";
+                        users_ofMatch = null;
+                        conn.send(sending);
+                    }
+                    else if(message.startsWith("totalEnd")){
+                        clearView();
+                        logs.clear();
+                        String matchId = message.split(";")[1].split("=")[1];
+                        if(matchClients.get(matchId)!=null) {
+                            WebSocket[] clients = matchClients.get(matchId).toArray(new WebSocket[0]);
+                            for (WebSocket client : clients) client.close();
+                            Enumeration<String> e = clientConnection.keys();
+                            boolean exit = false;
+                            while (e.hasMoreElements() && !exit) {
+                                Log.e("totalend", "while");
+                                for (WebSocket client : clients) {
+                                    Log.e("totalend", "for");
+                                    String tmp = e.nextElement();
+                                    if (clientConnection.get(tmp) == client) {
+                                        clientConnection.remove(tmp);
+                                        exit = true;
+                                        break;
+                                    }
+                                }
+                            }
+                            e = null; clients = null;
+                            matchClients.remove(matchId);
+                            users_scorePerMatch.remove(matchId);
+                            matchExtractedNumbers.remove(matchId);
                         }
                     }
-                    matchClients.remove(matchId);
-                    users_scorePerMatch.remove(matchId);
-                    matchExtractedNumbers.remove(matchId);
                 }
-            }
+            });
+
+            thread.start();
         }
         @Override
         public void onMessage(WebSocket conn, ByteBuffer message) {
-            Log.i("WebSocket(message)", conn + ": " + message );
+            Thread thread = new Thread(new Runnable() {
+                @Override
+                public void run() {
+                    Log.i("WebSocket(message)", conn + ": " + message );
+
+                }
+            });
+            thread.start();
         }
 
         public static void main(String[] args){
-            int port;
-            try {
-                port = Integer.parseInt(args[0]);
-            } catch (Exception ex) {
-                ex.printStackTrace();
-            }
         }
         @Override
         public void onError(WebSocket conn, Exception ex) {
@@ -328,8 +374,13 @@ public class MainActivity extends AppCompatActivity {
 
         @Override
         public void onStart() {
-            Log.i("WebSocket", "Server started!");
-            logs.add("Server started!");
+            Thread thread = new Thread(new Runnable() {
+                @Override
+                public void run() {
+                    Log.i("WebSocket", "Server started!");
+                }
+            });
+            thread.start();
         }
     }
 }

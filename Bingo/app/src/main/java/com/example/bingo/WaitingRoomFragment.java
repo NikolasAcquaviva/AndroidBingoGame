@@ -159,7 +159,7 @@ public class WaitingRoomFragment extends Fragment {
                                         BingoMatchFragment.nextTurn();
                                     }
                                 };
-                                timer.schedule(nextExtraction,3000L);
+                                timer.schedule(nextExtraction,2500L);
                             }
                             else if(msg.startsWith("statement")){
                                 String state = msg.split(";")[1];
